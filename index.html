@@ -1,29 +1,27 @@
 <!doctype html><html lang='pl'><head><meta charset='utf-8'><title>TicTacToe</title><style>
 body{margin:0;background:#08111f;color:#fff;font-family:Arial;overflow:hidden}#bg{position:fixed;inset:0;background:radial-gradient(circle,#1d4ed8,#08111f 70%);animation:a 8s infinite alternate}@keyframes a{to{filter:hue-rotate(90deg)}}
 #menu,#game{position:relative;z-index:2;height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center}button{padding:15px 40px;margin:10px;font-size:22px}.board{display:grid;grid-template:repeat(3,140px)/repeat(3,140px);gap:10px}.cell{display:flex;align-items:center;justify-content:center;background:#ffffff20;font-size:90px;cursor:pointer}
-</style>
-<style>
-.menuBtn{padding:18px 60px;font-size:24px;font-weight:bold;border:none;border-radius:18px;cursor:pointer;
-background:linear-gradient(45deg,#00c6ff,#0072ff);color:white;box-shadow:0 0 20px #00c6ff;transition:.25s}
-.menuBtn:hover{transform:scale(1.08);box-shadow:0 0 35px #4fd1ff}
-</style>
-</head><body><div id=bg></div>
-<div id=menu><h1>🎮 Kółko i Krzyżyk</h1><h2>Wybierz poziom</h2><button class='menuBtn' onclick='start(0)'>Łatwy</button><button class='menuBtn' onclick='start(1)'>Średni</button><button class='menuBtn' onclick='start(2)'>Trudny</button></div>
+.menuBtn{padding:18px 60px;font-size:24px;font-weight:bold;border:none;border-radius:18px;cursor:pointer;background:linear-gradient(45deg,#00c6ff,#0072ff);color:#fff;box-shadow:0 0 20px #00c6ff}
+</style></head><body><div id=bg></div>
+<div id=menu><h1>🎮 Kółko i Krzyżyk</h1><h2>Wybierz poziom</h2>
+<button class=menuBtn onclick='start(0)'>Łatwy</button>
+<button class=menuBtn onclick='start(1)'>Średni</button>
+<button class=menuBtn onclick='start(2)'>Trudny</button>
+<button class=menuBtn onclick='start(3)'>☠️ Ekstremalny</button></div>
 <div id=game style='display:none'><h2 id=s></h2><div class=board id=b></div><button onclick='location.reload()'>Powrót do menu</button></div>
 <script>
 const AC=new(window.AudioContext||webkitAudioContext)();
-function tone(f,d){AC.resume();let o=AC.createOscillator(),g=AC.createGain();o.type='triangle';o.frequency.value=f;o.connect(g);g.connect(AC.destination);g.gain.value=.08;o.start();g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+d);o.stop(AC.currentTime+d);}
-
-let lvl=0,c=Array(9).fill(""),g=0,W=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]],b=document.getElementById('b'),s=document.getElementById('s');
+function beep(f){AC.resume();let o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.frequency.value=f;o.type="square";g.gain.value=.08;o.start();g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.12);o.stop(AC.currentTime+.12);}
+let lvl=0,c=Array(9).fill(""),gm=0,W=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]],b=document.getElementById('b'),s=document.getElementById('s');
 for(let i=0;i<9;i++){let d=document.createElement('div');d.className='cell';d.onclick=()=>pm(i);b.appendChild(d)}
-function start(l){lvl=l;menu.style.display='none';game.style.display='flex';s.textContent='Twój ruch';draw()}
+function start(l){lvl=l;menu.style.display='none';game.style.display='flex';draw();s.textContent='Twój ruch'}
 function draw(){[...b.children].forEach((e,i)=>e.textContent=c[i])}
-function w(p){return W.some(a=>a.every(i=>c[i]==p))} function f(){return c.every(Boolean)}
-function pm(i){if(g||c[i])return;c[i]='X';tone(700,.08);draw();if(end('X'))return;setTimeout(bot,250)}
-function end(p){if(w(p)){g=1;s.textContent=p=='X'?'Wygrałeś!':'Bot wygrał';tone(p=='X'?1000:180,.5);return 1}if(f()){g=1;s.textContent='Remis';return 1}}
-function tw(p){for(let i=0;i<9;i++)if(!c[i]){c[i]=p;if(w(p)){c[i]='';return i}c[i]=''}return-1}
-function rand(){let a=c.map((v,i)=>!v?i:null).filter(x=>x!=null);return a[Math.random()*a.length|0]}
-function smart(){return tw('O')??0, (m=tw('O'))>-1?m:(m=tw('X'))>-1?m:(!c[4]?4:rand())}
-function mm(p){if(w('O'))return{sc:1};if(w('X'))return{sc:-1};if(f())return{sc:0};let best={sc:p=='O'?-9:9};for(let i=0;i<9;i++)if(!c[i]){c[i]=p;let r=mm(p=='O'?'X':'O');c[i]='';r.i=i;if(p=='O'?r.sc>best.sc:r.sc<best.sc)best=r}return best}
-function bot(){let m=lvl==0?(Math.random()<.7?rand():smart()):lvl==1?(Math.random()<.35?rand():smart()):mm('O').i;c[m]='O';tone(350,.08);draw();end('O')}
+const win=p=>W.some(a=>a.every(i=>c[i]==p));const full=()=>c.every(Boolean);
+function end(p){if(win(p)){gm=1;s.textContent=p=="X"?"Wygrałeś":"Bot wygrał";return 1}if(full()){gm=1;s.textContent="Remis";return 1}}
+function pm(i){if(gm||c[i])return;c[i]="X";beep(700);draw();if(end("X"))return;setTimeout(bot,180)}
+function free(){return c.map((v,i)=>!v?i:null).filter(v=>v!=null)}
+function tw(p){for(let i of free()){c[i]=p;if(win(p)){c[i]="";return i}c[i]=""}return -1}
+function rand(){let f=free();return f[Math.random()*f.length|0]}
+function mm(p){if(win("O"))return{sc:1};if(win("X"))return{sc:-1};if(full())return{sc:0};let best={sc:p=="O"?-9:9};for(let i of free()){c[i]=p;let r=mm(p=="O"?"X":"O");c[i]="";r.i=i;if((p=="O"&&r.sc>best.sc)||(p=="X"&&r.sc<best.sc))best=r}return best}
+function bot(){let m=lvl<2?(tw("O")!=-1?tw("O"):rand()):mm("O").i;c[m]="O";beep(320);draw();end("O")}
 </script></body></html>
