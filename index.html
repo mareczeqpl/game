@@ -1,317 +1,2014 @@
 <!DOCTYPE html>
-<html>
+<html lang="pl">
 <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🪙 Clicker Game</title>
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            user-select: none;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a2e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #6c63ff;
+            border-radius: 8px;
+        }
 
-<script>
-	var VERSION=2.058;
-	var BETA=0;
-	var SAVESUFFIX='';
-	var App=typeof App==='undefined'?0:App;
-	var PRESETMODS=[];
-	var LOCAL=(App || !window.location.hostname || window.location.hostname==='localhost' || window.location.hostname==='127.0.0.1');
-</script>
+        /* ===== APP ===== */
+        #app {
+            max-width: 1200px;
+            width: 100%;
+            background: linear-gradient(145deg, #12122a, #0d0d1f);
+            border-radius: 28px;
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 0 40px rgba(108, 99, 255, 0.05);
+            border: 1px solid rgba(108, 99, 255, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        #app::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 20%, rgba(108, 99, 255, 0.03), transparent 60%);
+            pointer-events: none;
+        }
 
-<!-- external -->
-<script type="text/javascript">
-	if (!LOCAL)
-	{
-		window.cookieconsent_options={"message":"Unsurprisingly, this website uses cookies for ads and traffic analysis.","dismiss":"Got it!","learnMore":"Learn more","link":"//orteil.dashnet.org/cookieconsentpolicy.html","target":"_blank","theme":"//orteil.dashnet.org/cookieconsent.css","domain":"dashnet.org"};
-		
-		var script=document.createElement('script');
-		script.src='//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/1.0.9/cookieconsent.min.js';
-		document.head.appendChild(script);
-	}
-</script>
+        /* ===== HEADER ===== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(108, 99, 255, 0.15);
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+        }
+        .header .title {
+            font-size: 26px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffd700, #ffb300);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+        .header .title span {
+            font-weight: 300;
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.3);
+        }
+        .header-stats {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .header-stats .stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 6px 16px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .header-stats .stat .icon {
+            font-size: 18px;
+        }
+        .header-stats .stat .value {
+            font-weight: 600;
+            color: #fff;
+        }
+        .header-stats .stat .value.coin {
+            color: #ffd700;
+        }
+        .header-stats .stat .value.cps {
+            color: #6c63ff;
+        }
 
-<!--<link href="https://fonts.googleapis.com/css?family=Kavoon&subset=latin,latin-ext" rel="stylesheet" type="text/css">-->
-<style type="text/css">@font-face {font-family:'Merriweather';font-style:normal;font-weight:900;src:url(/cf-fonts/s/merriweather/5.2.11/cyrillic/900/normal.woff2);unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;font-display:swap;}@font-face {font-family:'Merriweather';font-style:normal;font-weight:900;src:url(/cf-fonts/s/merriweather/5.2.11/latin/900/normal.woff2);unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap;}@font-face {font-family:'Merriweather';font-style:normal;font-weight:900;src:url(/cf-fonts/s/merriweather/5.2.11/vietnamese/900/normal.woff2);unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;font-display:swap;}@font-face {font-family:'Merriweather';font-style:normal;font-weight:900;src:url(/cf-fonts/s/merriweather/5.2.11/cyrillic-ext/900/normal.woff2);unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;font-display:swap;}@font-face {font-family:'Merriweather';font-style:normal;font-weight:900;src:url(/cf-fonts/s/merriweather/5.2.11/latin-ext/900/normal.woff2);unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;font-display:swap;}</style>
+        /* ===== MAIN LAYOUT ===== */
+        .main {
+            display: flex;
+            gap: 24px;
+            position: relative;
+            z-index: 2;
+        }
+        @media (max-width: 800px) {
+            .main {
+                flex-direction: column;
+            }
+        }
 
-<!-- Facebook Pixel Code -->
-	<script>
-	if (!LOCAL)
-	{
-		!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-		n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-		n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-		t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
-		document,'script','https://connect.facebook.net/en_US/fbevents.js');
-		fbq('init', '357399801355203');
-		fbq('track', 'PageView');
-	}
-	</script>
-	<noscript><img height="1" width="1" style="display:none"
-	src="https://www.facebook.com/tr?id=357399801355203&ev=PageView&noscript=1"></noscript>
-<!-- end code -->
-<!-- /external -->
+        /* ===== LEFT: CLICK AREA ===== */
+        .click-area {
+            flex: 0 0 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+            position: relative;
+        }
+        @media (max-width: 800px) {
+            .click-area {
+                flex: unset;
+                width: 100%;
+                padding: 10px 0;
+            }
+        }
+        .coin-container {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+        .coin-container:active {
+            transform: scale(0.92);
+        }
+        .coin {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: radial-gradient(ellipse at 30% 30%, #ffd700, #e6a800);
+            box-shadow: 0 0 60px rgba(255, 215, 0, 0.25), 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 -8px 24px rgba(0, 0, 0, 0.3), inset 0 8px 24px rgba(255, 255, 200, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            font-weight: 700;
+            color: #b8860b;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            border: 4px solid rgba(255, 215, 0, 0.3);
+            transition: box-shadow 0.3s ease;
+            position: relative;
+        }
+        .coin:hover {
+            box-shadow: 0 0 80px rgba(255, 215, 0, 0.35), 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 -8px 24px rgba(0, 0, 0, 0.3), inset 0 8px 24px rgba(255, 255, 200, 0.4);
+        }
+        .coin .coin-inner {
+            font-size: 32px;
+            color: #fff;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.15);
+            padding: 8px 20px;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .click-power {
+            margin-top: 16px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.04);
+            padding: 4px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .click-power strong {
+            color: #ffd700;
+            font-weight: 600;
+        }
 
-<title>Cookie Clicker</title>
-<!--
-Code and graphics copyright Orteil, 2013-2026
-Feel free to alter this code to your liking, but please do not re-host it, do not profit from it and do not present it as your own.
--->
+        /* ===== PARTICLES ===== */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+            animation: particleFly 0.9s ease-out forwards;
+            z-index: 999;
+        }
+        @keyframes particleFly {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(0.4);
+            }
+        }
+        .particle-burst {
+            position: fixed;
+            pointer-events: none;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.5), transparent);
+            animation: burstFade 0.6s ease-out forwards;
+            z-index: 998;
+        }
+        @keyframes burstFade {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
 
-<meta name="viewport" content="width=900, initial-scale=1">
-<link rel="shortcut icon" href="img/favicon.ico" />
-<script src="base64.js"></script>
+        /* ===== RIGHT PANEL ===== */
+        .panel {
+            flex: 1;
+            min-width: 0;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 16px 18px;
+            max-height: 540px;
+            display: flex;
+            flex-direction: column;
+        }
+        @media (max-width: 800px) {
+            .panel {
+                max-height: 420px;
+            }
+        }
 
-<link href="style.css?v=10c" rel="stylesheet" type="text/css">
-<script src="main.js?v=13g"></script>
+        /* ===== TABS ===== */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 10px;
+        }
+        .tabs .tab {
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.4);
+            border: 1px solid transparent;
+            transition: all 0.25s ease;
+        }
+        .tabs .tab:hover {
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .tabs .tab.active {
+            color: #fff;
+            background: rgba(108, 99, 255, 0.2);
+            border-color: rgba(108, 99, 255, 0.3);
+            box-shadow: 0 0 20px rgba(108, 99, 255, 0.05);
+        }
+        .tabs .tab .badge {
+            background: rgba(108, 99, 255, 0.3);
+            padding: 0 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            margin-left: 4px;
+            color: #aaa;
+        }
+        .tabs .tab.active .badge {
+            background: rgba(108, 99, 255, 0.4);
+            color: #fff;
+        }
 
-<!-- ad -->
-<script type="text/javascript">
-	if (LOCAL)
-	{
-		adsbygoogle=window.adsbygoogle={
-			enabled:true,
-			loaded:true,
-			push:function(){return;},
-			google_ad_client:"",
-			enable_page_level_ads:true
-		}
-	}
-</script>
-<script src="showads.js"></script><!-- this just detects adblockers so we can adjust the layout and play nice -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({
-          google_ad_client: "ca-pub-5622691057838054",
-          enable_page_level_ads: true
-     });
-</script>
-<!-- /ad -->
+        /* ===== TAB CONTENT ===== */
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
+        .tab-pane.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-<!--[if IE]>
-<style type="text/css">
-	#ifIE9{display:block;}
-</style>
-<![endif]-->
+        /* ===== UPGRADE CARDS ===== */
+        .upgrade-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .upgrade-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.2s ease;
+            cursor: default;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .upgrade-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(108, 99, 255, 0.15);
+        }
+        .upgrade-item.bought {
+            opacity: 0.6;
+            border-color: rgba(76, 175, 80, 0.2);
+        }
+        .upgrade-item.bought:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .upgrade-item .info {
+            flex: 1;
+            min-width: 120px;
+        }
+        .upgrade-item .info .name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #fff;
+        }
+        .upgrade-item .info .desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 1px;
+        }
+        .upgrade-item .info .owned {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.3);
+            margin-top: 2px;
+        }
+        .upgrade-item .cost {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffd700;
+            background: rgba(255, 215, 0, 0.06);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            white-space: nowrap;
+        }
+        .upgrade-item .cost .coin-icon {
+            font-size: 14px;
+        }
+        .upgrade-item .cost .cost-value {
+            font-size: 14px;
+        }
+        .upgrade-item .cost.not-enough {
+            opacity: 0.4;
+            border-color: rgba(255, 0, 0, 0.2);
+        }
+        .upgrade-item .buy-btn {
+            background: linear-gradient(135deg, #6c63ff, #5a52e0);
+            border: none;
+            color: #fff;
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(108, 99, 255, 0.2);
+            min-width: 64px;
+        }
+        .upgrade-item .buy-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(108, 99, 255, 0.35);
+        }
+        .upgrade-item .buy-btn:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+        .upgrade-item .buy-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .upgrade-item.bought .buy-btn {
+            background: #2d7a3a;
+        }
 
-<!--[if lt IE9]><script src="excanvas.compiled.js"></script><![endif]-->
+        /* ===== GENERATOR CARDS ===== */
+        .gen-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.2s ease;
+            cursor: default;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .gen-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(108, 99, 255, 0.1);
+        }
+        .gen-item .info {
+            flex: 1;
+            min-width: 120px;
+        }
+        .gen-item .info .name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #fff;
+        }
+        .gen-item .info .desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 1px;
+        }
+        .gen-item .info .owned {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.3);
+            margin-top: 2px;
+        }
+        .gen-item .info .production {
+            font-size: 11px;
+            color: #6c63ff;
+            margin-top: 1px;
+        }
+        .gen-item .cost {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffd700;
+            background: rgba(255, 215, 0, 0.06);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            white-space: nowrap;
+        }
+        .gen-item .cost .coin-icon {
+            font-size: 14px;
+        }
+        .gen-item .cost .cost-value {
+            font-size: 14px;
+        }
+        .gen-item .cost.not-enough {
+            opacity: 0.4;
+            border-color: rgba(255, 0, 0, 0.2);
+        }
+        .gen-item .buy-btn {
+            background: linear-gradient(135deg, #ff6b6b, #e05555);
+            border: none;
+            color: #fff;
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(255, 107, 107, 0.2);
+            min-width: 64px;
+        }
+        .gen-item .buy-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(255, 107, 107, 0.35);
+        }
+        .gen-item .buy-btn:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+        .gen-item .buy-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ===== PRESTIGE ===== */
+        .prestige-area {
+            text-align: center;
+            padding: 12px 0;
+        }
+        .prestige-area .pp-display {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ff6bff;
+            text-shadow: 0 0 30px rgba(255, 107, 255, 0.2);
+            margin: 8px 0;
+        }
+        .prestige-area .pp-desc {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        .prestige-area .pp-bonus {
+            font-size: 14px;
+            color: #6c63ff;
+            background: rgba(108, 99, 255, 0.08);
+            padding: 6px 16px;
+            border-radius: 40px;
+            display: inline-block;
+            margin-bottom: 16px;
+            border: 1px solid rgba(108, 99, 255, 0.1);
+        }
+        .prestige-btn {
+            background: linear-gradient(135deg, #ff6bff, #d94fd9);
+            border: none;
+            color: #fff;
+            padding: 12px 40px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 30px rgba(255, 107, 255, 0.3);
+        }
+        .prestige-btn:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 40px rgba(255, 107, 255, 0.4);
+        }
+        .prestige-btn:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+        .prestige-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .prestige-info {
+            margin-top: 16px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.3);
+            line-height: 1.6;
+        }
+
+        /* ===== ACHIEVEMENTS ===== */
+        .ach-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        @media (max-width: 600px) {
+            .ach-list {
+                grid-template-columns: 1fr;
+            }
+        }
+        .ach-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+        .ach-item.unlocked {
+            border-color: rgba(255, 215, 0, 0.2);
+            background: rgba(255, 215, 0, 0.04);
+        }
+        .ach-item .ach-icon {
+            font-size: 24px;
+            opacity: 0.3;
+            transition: all 0.3s ease;
+        }
+        .ach-item.unlocked .ach-icon {
+            opacity: 1;
+        }
+        .ach-item .ach-info {
+            flex: 1;
+        }
+        .ach-item .ach-info .ach-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .ach-item.unlocked .ach-info .ach-name {
+            color: #fff;
+        }
+        .ach-item .ach-info .ach-desc {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.25);
+        }
+        .ach-item .ach-status {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.15);
+        }
+        .ach-item.unlocked .ach-status {
+            color: #ffd700;
+        }
+
+        /* ===== STATS ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .stat-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .stat-item .stat-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.35);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-item .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            margin-top: 2px;
+        }
+        .stat-item .stat-value.gold {
+            color: #ffd700;
+        }
+        .stat-item .stat-value.purple {
+            color: #6c63ff;
+        }
+        .stat-item .stat-value.pink {
+            color: #ff6bff;
+        }
+        .stat-item .stat-value.green {
+            color: #4caf50;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            position: relative;
+            z-index: 2;
+        }
+        .footer .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .footer .actions button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.5);
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .footer .actions button:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .footer .actions button.primary {
+            background: rgba(108, 99, 255, 0.15);
+            border-color: rgba(108, 99, 255, 0.2);
+            color: #6c63ff;
+        }
+        .footer .actions button.primary:hover {
+            background: rgba(108, 99, 255, 0.25);
+            border-color: rgba(108, 99, 255, 0.3);
+        }
+        .footer .theme-toggle {
+            font-size: 20px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 40px;
+            padding: 4px 12px;
+            transition: all 0.2s ease;
+            color: rgba(255, 255, 255, 0.4);
+        }
+        .footer .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+        .footer .save-info {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.15);
+        }
+        .footer .sound-toggle {
+            font-size: 20px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 40px;
+            padding: 4px 12px;
+            transition: all 0.2s ease;
+            color: rgba(255, 255, 255, 0.4);
+        }
+        .footer .sound-toggle:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+
+        /* ===== NOTIFICATION ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            color: #fff;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast .toast-icon {
+            margin-right: 8px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 600px) {
+            #app {
+                padding: 14px;
+                border-radius: 18px;
+            }
+            .header .title {
+                font-size: 20px;
+            }
+            .header-stats .stat {
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+            .coin {
+                width: 140px;
+                height: 140px;
+                font-size: 60px;
+            }
+            .coin .coin-inner {
+                font-size: 22px;
+                padding: 4px 14px;
+            }
+            .click-area {
+                flex: unset;
+                padding: 6px 0;
+            }
+            .panel {
+                max-height: 380px;
+                padding: 12px;
+            }
+            .tabs .tab {
+                font-size: 11px;
+                padding: 4px 12px;
+            }
+            .upgrade-item,
+            .gen-item {
+                padding: 8px 10px;
+            }
+            .upgrade-item .info .name,
+            .gen-item .info .name {
+                font-size: 12px;
+            }
+            .upgrade-item .buy-btn,
+            .gen-item .buy-btn {
+                font-size: 11px;
+                padding: 4px 12px;
+                min-width: 50px;
+            }
+            .prestige-btn {
+                font-size: 15px;
+                padding: 10px 28px;
+            }
+            .footer {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .footer .actions {
+                justify-content: center;
+            }
+            .footer .save-info {
+                text-align: center;
+            }
+            .toast {
+                font-size: 12px;
+                padding: 10px 20px;
+                white-space: normal;
+                max-width: 90%;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 <body>
 
-<div id="wrapper">
+    <!-- ===== TOAST ===== -->
+    <div id="toast" class="toast"></div>
 
-	<div id="topBar">
-		<!--<div><a href="//dashnet.org" target="_blank" id="topbarDashnet">DashNet</a></div>-->
-		<!--<div style="width:80px;"><div style="width:80px;height:32px;background:url(img/DashnetLogoTiny.png);position:absolute;left:0px;top:0px;pointer-events:none;opacity:0.5;"></div><a style="opacity:0;" href="//dashnet.org" target="_blank" id="topbarDashnet">DashNet</a></div>-->
-		<div style="padding:0px;height:100%;"><a style="background:linear-gradient(0deg,rgba(95,22,255,0.5),rgba(182,22,255,0.25));height:24px;display:inline-block;padding:8px;padding-bottom:0px;font-variant:small-caps;color:#b76fff;text-shadow:0px 1px 2px #1b0031;" href="//dashnet.org" target="_blank" id="topbarDashnet">DashNet</a></div>
-		<!--<div style="padding-left:58px;"><div style="width:56px;height:32px;background:url(img/CookieClickerLogoTiny.png);position:absolute;left:4px;top:0px;pointer-events:none;opacity:0.5;"></div>&trade; &copy; <a href="//orteil.dashnet.org" target="_blank" id="topbarOrteil">Orteil</a>, 2025</div>-->
-		<!--<div><b style="font-weight:bold;">Cookie Clicker</b>&trade; &copy; <a href="//orteil.dashnet.org" target="_blank" id="topbarOrteil">Orteil</a>, 2025</div>-->
-		<div><a href="">Cookie Clicker</a>&trade; &copy; <a href="//orteil.dashnet.org" target="_blank" id="topbarOrteil">Orteil</a>, 2026</div>
-		<div><a href="https://orteil42.tumblr.com" target="_blank" id="topbarTumblr">tumblr</a></div>
-		<div><a href="https://orteil42.bsky.social" target="_blank" id="topbarTwitter">bluesky</a></div>
-		<div style="position:relative;"><div style="width:22px;height:32px;background:url(img/discord.png);position:absolute;left:0px;top:0px;pointer-events:none;"></div><a href="https://discordapp.com/invite/cookie" target="_blank" style="padding-left:16px;" id="topbarDiscord">Discord</a></div>
-		<div style="position:relative;"><div style="width:25px;height:32px;background:url(img/weeHoodie.png);position:absolute;left:-2px;top:0px;pointer-events:none;"></div><a class="blueLink" href="https://www.redbubble.com/people/dashnet" target="_blank" style="padding-left:12px;" id="topbarMerch">Merch!</a></div>
-		<div style="position:relative;display:none;font-weight:bold;" id="heralds"><div style="position:absolute;top:-4px;width:31px;height:39px;background:url(img/heraldFlag.png);left:50%;margin-left:-15px;pointer-events:none;"></div><div id="heraldsAmount" style="position:relative;z-index:10;text-shadow:0px 1px 0px #000,0px 0px 6px #ff00e4;color:#fff;">-</div></div>
-		<div><a class="lightblueLink" style="font-weight:bold;" href="https://play.google.com/store/apps/details?id=org.dashnet.cookieclicker" target="_blank" id="topbarMobileCC">Cookie Clicker for Android</a></div>
-		<div><a class="lightblueLink" style="font-weight:bold;" href="https://store.steampowered.com/app/1454400/Cookie_Clicker/" target="_blank" id="topbarSteamCC">Cookie Clicker on Steam</a></div>
-		<!--<div><a href="//orteil.dashnet.org/randomgen/" target="_blank" id="topbarRandomgen">RandomGen</a></div>
-		<div><a href="//orteil.dashnet.org/igm/" target="_blank" id="topbarIGM">Idle Game Maker</a></div>-->
-		<div style="float:right;position:relative;"><div id="tinyglobe" style="position:absolute;top:-4px;width:22px;height:22px;background:url(img/tinyglobeSheet.gif);right:4px;top:4px;pointer-events:none;"></div><a id="changeLanguage" style="font-variant:small-caps;padding-right:20px;" onmouseover="INTERVAL_TINYGLOBE=setInterval(function(){var tinyglobe=document.getElementById('tinyglobe');tinyglobe.style.backgroundPosition=(parseInt(tinyglobe.style.backgroundPosition)-22)+'px';},30);" onmouseout="clearInterval(INTERVAL_TINYGLOBE);">Change language</a><script>document.getElementById('tinyglobe').style.backgroundPosition=(-[0,19,27][Math.floor(Math.random()*3)]*22)+'px';</script></div>
-		<div id="topbarOtherVersions" style="float:right;z-index:10000000;" class="hoverer">
-			Other versions
-			<div class="hoverable">
-				<a href="../" target="_blank" id="linkVersionLive">Live version</a>
-				<a href="beta" target="_blank" id="linkVersionBeta">Try the beta!</a>
-				<a href="//orteil.dashnet.org/cookieclicker/v10466" target="_blank" id="linkVersionOld">v. 1.0466</a>
-				<a href="//orteil.dashnet.org/experiments/cookie/" target="_blank">Classic</a>
-			</div>
-		</div>
-		<div id="topBarEnd" style="float:right;padding:0px;"></div>
-	</div>
-	<div id="game">
-		<div id="versionNumber" class="title"></div>
-		<script>document.getElementById('versionNumber').innerHTML='v. '+VERSION;</script>
-		<div id="offGameMessageWrap">
-			<div id="offGameMessage">
-				<div id="loader">
-					<div class="spinnyBig"></div>
-					<div class="spinnySmall"></div>
-					<div id="loading" class="title">Loading...</div>
-					<div id="failedToLoad" class="title">This is taking longer than expected.<br>
-					<div style="font-size:65%;line-height:120%;"><!-- error -->Slow connection? If not, please make sure your javascript is enabled, then refresh.<br>
-					If problems persist, this might be on our side - wait a few minutes, then hit ctrl+f5!<!-- /error --></div></div>
-					<div id="ifIE9" class="title" style="font-size:100%;line-height:120%;">Your browser may not be recent enough to run Cookie Clicker.<br>You might want to update, or switch to a more modern browser such as Chrome or Firefox.</div>
-				</div>
-			</div>
-		</div>
+    <!-- ===== APP ===== -->
+    <div id="app">
 
-		<canvas id="backgroundCanvas"></canvas>
-		
-		<div id="goldenCookie" class="goldenCookie"></div>
-		<div id="seasonPopup" class="seasonPopup"></div>
-		<div id="shimmers"></div>
-		<div id="alert"></div>
-		<div id="particles"></div>
-		<div id="sparkles" class="sparkles"></div>
-		<div id="notes"></div>
-		<div id="darken"></div>
-		<div id="toggleBox" class="framed prompt"></div>
-		<div id="promptAnchor"><div id="prompt" class="framed"><div id="promptContent"></div><div id="promptClose" class="close" style="display:none;" onclick="PlaySound('snd/tickOff.mp3');Game.ClosePrompt();">x</div></div></div>
-		<div id="ascend">
-			<div id="ascendBG"></div>
-			<div id="ascendZoomable"><div id="ascendContent"><div id="ascendUpgrades" style="position:absolute;"></div></div></div>
-			<div id="ascendOverlay"></div>
-		</div>
-		
-		<div id="debug"><div id="devConsole" class="framed"></div><div id="debugLog"></div></div>
-		
-		<div id="sectionLeft" class="inset">
-			<canvas id="backgroundLeftCanvas" style="z-index:5;"></canvas>
-			<div class="blackFiller"></div>
-			<div class="blackGradient"></div>
-			<div id="sectionLeftInfo"></div>
-			<div id="cookies" class="title"></div>
-			<div id="bakeryNameAnchor"><div id="bakeryName" class="title"></div></div>
-			<div id="specialPopup" class="framed prompt offScreen"></div>
-			<div id="buffs" class="crateBox"></div>
-			<div id="cookieAnchor">
-				<button id="bigCookie"></button>
-				<div id="cookieNumbers"></div>
-			</div>
-			<div id="sectionLeftExtra"></div>
-		</div>
+        <!-- HEADER -->
+        <div class="header">
+            <div class="title">🪙 Clicker <span>Game</span></div>
+            <div class="header-stats">
+                <div class="stat">
+                    <span class="icon">🪙</span>
+                    <span class="value coin" id="hdrCoins">0</span>
+                </div>
+                <div class="stat">
+                    <span class="icon">⚡</span>
+                    <span class="value cps" id="hdrCps">0</span>
+                </div>
+                <div class="stat">
+                    <span class="icon">⭐</span>
+                    <span class="value" id="hdrPp" style="color:#ff6bff;">0</span>
+                </div>
+            </div>
+        </div>
 
-		<div class="separatorLeft" id="leftBeam"></div>
-		<div class="separatorRight" id="rightBeam"></div>
+        <!-- MAIN -->
+        <div class="main">
 
-		<div id="sectionMiddle" class="inset">
-			<div id="comments" class="inset title">
-				<div id="prefsButton" class="panelButton"><div class="subButton">Options</div></div>
-				<div id="statsButton" class="panelButton"><div>Stats</div></div>
-				<div id="logButton" class="panelButton"><div>Info</div><div id="checkForUpdate">New update!</div></div>
-				<div id="legacyButton" class="panelButton"><div class="subButton">Legacy</div><div id="ascendMeterContainer" class="smallFramed meterContainer"><div id="ascendMeter" class="meter filling"></div></div><div class="roundedPanel" id="ascendNumber"></div><div id="ascendTooltip" class="framed"></div></div>
-				<div id="commentsText">
-					<div id="commentsText1" class="commentsText"></div>
-					<div id="commentsText2" class="commentsText"></div>
-				</div>
-				<div class="separatorBottom"></div>
-			</div>
-			<div id="centerArea">
-				<div id="buildingsTitle" class="inset title zoneTitle">Buildings</div>
-				<div id="buildingsMaster"></div>
-				<div id="rows"></div>
-				<div id="menu"></div>
-			</div>
-		</div>
-		
-		<div id="sectionRight" class="inset">
-			<!-- ad -->
-			<div class="ifNoAds" style="width:300px;text-align:center;padding:8px 0px;background:rgba(0,0,0,0.95);font-size:10px;opacity:0.5;text-shadow:0px 0px 2px #000,0px 1px 0px #000;text-align:center;">
-				<!--Cookie Clicker is mainly supported by ads.<br>Consider unblocking our site!-->
-			</div>
-			<div id="smallSupport" style="width:300px;text-align:center;padding-bottom:40px;background:rgba(0,0,0,0.5);position:relative;z-index:100;">
-				
-				<!-- Cookie Clicker Header Responsive -->
-				<ins class="adsbygoogle"
-					 style="display:block;margin:auto;width:300px;max-height:300px;overflow:hidden;"
-					 data-ad-client="ca-pub-5622691057838054"
-					 data-ad-slot="4603093678"
-					 data-ad-format="rectangle"
-					 data-full-width-responsive="true"></ins>
-				<script>
-				(adsbygoogle = window.adsbygoogle || []).push({});
-				</script>
-				
-				<script>
-				if (!LOCAL)
-				{
-					document.addEventListener('DOMContentLoaded',function(){
-						setTimeout(function(){
-							var adSlot=document.querySelector("ins[data-ad-slot='4603093678']");
-							if(typeof adsbygoogle == 'undefined' || (adSlot && adSlot.getAttribute('data-ad-status')=='unfilled'))
-							{
-								var backfill=document.createElement('div');backfill.innerHTML='<iframe style="border:none;" src="https://serve.app.playsaurus.com/ad-campaigns/9bf4f856-f25c-430d-88b3-b61dabefe175/embed" width="300" height="250" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer-when-downgrade"></iframe>';
-								adSlot.parentNode.replaceChild(backfill,adSlot);
-							}
-						},3000);
-					});
-				}
-				</script>
-				
-				<div class="supportComment">&#11165; Sponsored link &#11165;</div>
-			</div>
-			<!-- /ad -->
-			<div id="store">
-				<div id="storeTitle" class="inset title zoneTitle">Store</div>
-				<div id="toggleUpgrades" class="storeSection upgradeBox"></div>
-				<div id="techUpgrades" class="storeSection upgradeBox"></div>
-				<div id="vaultUpgrades" class="storeSection upgradeBox"></div>
-				<div id="upgrades" class="storeSection upgradeBox"></div>
-				<div id="products" class="storeSection"></div>
-			</div>
-			<!-- ad -->
-			<div id="detectAds" class="adBanner" style="background:transparent;width:1px;height:1px;"></div>
-			<div id="support" style="margin-top:130px;">
-				<div class="supportComment">&#11167; Sponsored links &#11167;</div>
-				<div style="position:relative;">
-				
-					<div style="position:relative;z-index:100;min-height:250px;">
-					
-						<!-- Cookie Clicker Responsive -->
-						<ins class="adsbygoogle"
-							 style="display:block;margin:auto;"
-							 data-ad-client="ca-pub-5622691057838054"
-							 data-ad-slot="5257699793"
-							 data-ad-format="auto"
-							 data-full-width-responsive="true"></ins>
-						<script>
-						(adsbygoogle = window.adsbygoogle || []).push({});
-						</script>
-				
-						<script>
-						if (!LOCAL)
-						{
-							document.addEventListener('DOMContentLoaded',function(){
-								setTimeout(function(){
-									var adSlot=document.querySelector("ins[data-ad-slot='5257699793']");
-									if(typeof adsbygoogle == 'undefined' || (adSlot && adSlot.getAttribute('data-ad-status')=='unfilled'))
-									{
-										var backfill=document.createElement('div');backfill.innerHTML='<iframe style="border:none;" src="https://serve.app.playsaurus.com/ad-campaigns/9bf13979-1171-4526-8e95-dcb2e0debbf9/embed" width="300" height="600" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer-when-downgrade"></iframe>';
-										adSlot.parentNode.replaceChild(backfill,adSlot);
-									}
-								},3000);
-							});
-						}
-						</script>
-						
-						<div style="height:32px;"></div>
-						
-						<div id="adPlaysaurus"></div>
-						
-						<div style="height:32px;"></div>
-						
-						<div id="adAQ"></div>
-						
-						<script>
-						if (!LOCAL)
-						{
-							document.addEventListener('DOMContentLoaded',function(){
-								<!-- Playsaurus banner -->
-								document.getElementById('adPlaysaurus').innerHTML='<iframe class="ad" style="border:none;" src="https://serve.app.playsaurus.com/ad-campaigns/9bf75822-eb31-4650-90d3-3efeeb3d09c6/embed" width="300" height="64" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer-when-downgrade"></iframe>';
-								
-							
-								<!-- AdventureQuest Worlds banner -->
-								document.getElementById('adAQ').innerHTML='<a class="ad" id="aqad" href="http://www.aq.com/landing/cookie/?utm_campaign=AQW_CookieClicker&utm_source=CookieClicker" target="_blank" title="AdventureQuest Worlds" style="background:url(img/AQWorlds_CookieClicker_300x40.png) no-repeat;width:300px;height:64px;display:block;position:relative;margin:0px auto;"></a>';
-							});
-						}
-						</script>
-						
-					</div>
-					
-				</div>
-			</div>
-			<!-- /ad -->
-		</div>
-		
-		<div id="tooltipAnchor"><div id="tooltip" class="framed" onMouseOut="Game.tooltip.hide();"></div></div>
-		<div id="preloadImages" style="display:none;"></div>
+            <!-- LEFT: CLICK -->
+            <div class="click-area" id="clickArea">
+                <div class="coin-container" id="coinContainer">
+                    <div class="coin" id="coinEl">
+                        <span class="coin-inner">🪙</span>
+                    </div>
+                </div>
+                <div class="click-power">⚡ <strong id="clickPowerDisplay">1</strong> za klik</div>
+            </div>
 
-	</div>
+            <!-- RIGHT: PANEL -->
+            <div class="panel">
 
-</div>
+                <!-- TABS -->
+                <div class="tabs" id="tabs">
+                    <div class="tab active" data-tab="upgrades">⬆️ Ulepszenia</div>
+                    <div class="tab" data-tab="generators">🏭 Generatory</div>
+                    <div class="tab" data-tab="prestige">🌟 Prestiż</div>
+                    <div class="tab" data-tab="achievements">🏆 Osiągnięcia <span class="badge" id="achBadge">0</span></div>
+                    <div class="tab" data-tab="stats">📊 Statystyki</div>
+                </div>
 
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"bb95ad56b18d4ea6bbf1f664862b75a2"}' crossorigin="anonymous"></script>
+                <!-- CONTENT -->
+                <div class="tab-content">
+
+                    <!-- UPGRADES -->
+                    <div class="tab-pane active" id="pane-upgrades">
+                        <div class="upgrade-list" id="upgradeList"></div>
+                    </div>
+
+                    <!-- GENERATORS -->
+                    <div class="tab-pane" id="pane-generators">
+                        <div class="upgrade-list" id="generatorList"></div>
+                    </div>
+
+                    <!-- PRESTIGE -->
+                    <div class="tab-pane" id="pane-prestige">
+                        <div class="prestige-area">
+                            <div class="pp-display">⭐ <span id="ppCount">0</span></div>
+                            <div class="pp-desc">punktów prestiżu</div>
+                            <div class="pp-bonus" id="ppBonusDisplay">+0% do wszystkich przychodów</div>
+                            <button class="prestige-btn" id="prestigeBtn">🌟 Uruchom Prestiż</button>
+                            <div class="prestige-info" id="prestigeInfo">
+                                Zresetujesz postęp, ale zdobędziesz <strong>punkty prestiżu</strong>.<br />
+                                Każdy punkt daje <strong>+5%</strong> do wszystkich przychodów na zawsze.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ACHIEVEMENTS -->
+                    <div class="tab-pane" id="pane-achievements">
+                        <div class="ach-list" id="achList"></div>
+                    </div>
+
+                    <!-- STATS -->
+                    <div class="tab-pane" id="pane-stats">
+                        <div class="stats-grid" id="statsGrid"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <div class="actions">
+                <button id="saveBtn" class="primary">💾 Zapisz</button>
+                <button id="loadBtn">📂 Wczytaj</button>
+                <button id="resetBtn">🗑️ Reset</button>
+            </div>
+            <div class="save-info" id="saveInfo">Autozapis co 15s</div>
+            <div style="display:flex; gap:6px;">
+                <div class="sound-toggle" id="soundToggle">🔊</div>
+                <div class="theme-toggle" id="themeToggle">🌙</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ============================================================
+        //  SOUND MANAGER (Web Audio)
+        // ============================================================
+        class SoundManager {
+            constructor() {
+                this.enabled = true;
+                this.ctx = null;
+                try {
+                    this.ctx = new(window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.warn('Web Audio not supported');
+                }
+            }
+
+            resume() {
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playTone(freq, duration, type = 'sine', volume = 0.15, delay = 0) {
+                if (!this.enabled || !this.ctx) return;
+                this.resume();
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + delay);
+                    gain.gain.setValueAtTime(volume, this.ctx.currentTime + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + delay + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(this.ctx.currentTime + delay);
+                    osc.stop(this.ctx.currentTime + delay + duration);
+                } catch (e) { /* ignore */ }
+            }
+
+            playClick() {
+                this.playTone(800, 0.08, 'sine', 0.12);
+                this.playTone(1200, 0.06, 'sine', 0.08, 0.04);
+            }
+
+            playBuy() {
+                this.playTone(440, 0.15, 'sine', 0.15);
+                setTimeout(() => this.playTone(660, 0.12, 'sine', 0.12), 100);
+            }
+
+            playPrestige() {
+                const notes = [523, 659, 784, 1047];
+                notes.forEach((f, i) => {
+                    setTimeout(() => this.playTone(f, 0.2, 'sine', 0.13), i * 120);
+                });
+                setTimeout(() => this.playTone(130, 0.4, 'sawtooth', 0.08), 300);
+            }
+
+            playAchievement() {
+                this.playTone(880, 0.15, 'sine', 0.15);
+                setTimeout(() => this.playTone(1100, 0.15, 'sine', 0.13), 120);
+                setTimeout(() => this.playTone(1320, 0.25, 'sine', 0.18), 240);
+            }
+
+            playError() {
+                this.playTone(300, 0.25, 'sawtooth', 0.06);
+            }
+
+            toggle() {
+                this.enabled = !this.enabled;
+                if (this.enabled && this.ctx && this.ctx.state === 'suspended') {
+                    this.resume();
+                }
+                return this.enabled;
+            }
+        }
+
+        const sound = new SoundManager();
+
+        // ============================================================
+        //  GAME STATE
+        // ============================================================
+        const state = {
+            coins: 0,
+            totalCoinsEarned: 0,
+            totalClicks: 0,
+            clickPower: 1,
+            prestigePoints: 0,
+            totalPrestiges: 0,
+            generators: {},
+            upgrades: {},
+            achievements: {},
+            startTime: Date.now(),
+            lastSave: Date.now(),
+            gameTime: 0,
+        };
+
+        // ============================================================
+        //  CONFIG
+        // ============================================================
+        const CONFIG = {
+            PRESTIGE_BONUS_PER_POINT: 0.05,
+            PRESTIGE_COST_MULTIPLIER: 1.15,
+            SAVE_INTERVAL: 15000,
+            TICK_INTERVAL: 1000,
+        };
+
+        // ============================================================
+        //  UPGRADES
+        // ============================================================
+        const UPGRADES = [{
+            id: 'click1',
+            name: '💪 Mocny Klik',
+            desc: '+1 do kliknięcia',
+            baseCost: 10,
+            costMultiplier: 1.5,
+            maxLevel: 10,
+            effect: (lvl) => lvl * 1,
+        }, {
+            id: 'click2',
+            name: '🔥 Potężny Klik',
+            desc: '+5 do kliknięcia',
+            baseCost: 50,
+            costMultiplier: 1.6,
+            maxLevel: 10,
+            effect: (lvl) => lvl * 5,
+        }, {
+            id: 'click3',
+            name: '⚡ Mityczny Klik',
+            desc: '+25 do kliknięcia',
+            baseCost: 250,
+            costMultiplier: 1.7,
+            maxLevel: 10,
+            effect: (lvl) => lvl * 25,
+        }, {
+            id: 'click4',
+            name: '💥 Epicki Klik',
+            desc: '+100 do kliknięcia',
+            baseCost: 1200,
+            costMultiplier: 1.8,
+            maxLevel: 10,
+            effect: (lvl) => lvl * 100,
+        }, {
+            id: 'click5',
+            name: '🌟 Legendarny Klik',
+            desc: '+500 do kliknięcia',
+            baseCost: 6000,
+            costMultiplier: 1.9,
+            maxLevel: 10,
+            effect: (lvl) => lvl * 500,
+        }, ];
+
+        // ============================================================
+        //  GENERATORS
+        // ============================================================
+        const GENERATORS = [{
+            id: 'worker',
+            name: '👷 Pracownik',
+            desc: 'Produkuje 1 🪙/s',
+            baseCost: 15,
+            costMultiplier: 1.18,
+            baseProduction: 1,
+        }, {
+            id: 'farm',
+            name: '🌾 Farm',
+            desc: 'Produkuje 5 🪙/s',
+            baseCost: 100,
+            costMultiplier: 1.2,
+            baseProduction: 5,
+        }, {
+            id: 'factory',
+            name: '🏭 Fabryka',
+            desc: 'Produkuje 25 🪙/s',
+            baseCost: 500,
+            costMultiplier: 1.22,
+            baseProduction: 25,
+        }, {
+            id: 'mine',
+            name: '⛏️ Kopalnia',
+            desc: 'Produkuje 120 🪙/s',
+            baseCost: 2500,
+            costMultiplier: 1.25,
+            baseProduction: 120,
+        }, {
+            id: 'quantum',
+            name: '🌀 Generator Kwantowy',
+            desc: 'Produkuje 600 🪙/s',
+            baseCost: 12000,
+            costMultiplier: 1.28,
+            baseProduction: 600,
+        }, {
+            id: 'sun',
+            name: '☀️ Panele Słoneczne',
+            desc: 'Produkuje 3000 🪙/s',
+            baseCost: 60000,
+            costMultiplier: 1.32,
+            baseProduction: 3000,
+        }, ];
+
+        // ============================================================
+        //  ACHIEVEMENTS
+        // ============================================================
+        const ACHIEVEMENTS = [{
+            id: 'click_100',
+            name: '👆 100 kliknięć',
+            desc: 'Wykonaj 100 kliknięć',
+            check: () => state.totalClicks >= 100,
+        }, {
+            id: 'click_1k',
+            name: '👆👆 1000 kliknięć',
+            desc: 'Wykonaj 1000 kliknięć',
+            check: () => state.totalClicks >= 1000,
+        }, {
+            id: 'click_10k',
+            name: '👆👆👆 10 000 kliknięć',
+            desc: 'Wykonaj 10 000 kliknięć',
+            check: () => state.totalClicks >= 10000,
+        }, {
+            id: 'coins_1k',
+            name: '💰 1000 monet',
+            desc: 'Zarób 1000 monet',
+            check: () => state.totalCoinsEarned >= 1000,
+        }, {
+            id: 'coins_10k',
+            name: '💰💰 10 000 monet',
+            desc: 'Zarób 10 000 monet',
+            check: () => state.totalCoinsEarned >= 10000,
+        }, {
+            id: 'coins_100k',
+            name: '💰💰💰 100 000 monet',
+            desc: 'Zarób 100 000 monet',
+            check: () => state.totalCoinsEarned >= 100000,
+        }, {
+            id: 'coins_1m',
+            name: '💎 1 000 000 monet',
+            desc: 'Zarób 1 000 000 monet',
+            check: () => state.totalCoinsEarned >= 1000000,
+        }, {
+            id: 'gen_10_worker',
+            name: '👷 10 pracowników',
+            desc: 'Miej 10 pracowników',
+            check: () => (state.generators.worker || 0) >= 10,
+        }, {
+            id: 'gen_50_worker',
+            name: '👷👷 50 pracowników',
+            desc: 'Miej 50 pracowników',
+            check: () => (state.generators.worker || 0) >= 50,
+        }, {
+            id: 'gen_10_farm',
+            name: '🌾 10 farm',
+            desc: 'Miej 10 farm',
+            check: () => (state.generators.farm || 0) >= 10,
+        }, {
+            id: 'gen_5_factory',
+            name: '🏭 5 fabryk',
+            desc: 'Miej 5 fabryk',
+            check: () => (state.generators.factory || 0) >= 5,
+        }, {
+            id: 'cps_100',
+            name: '⚡ 100 🪙/s',
+            desc: 'Osiągnij 100 monet na sekundę',
+            check: () => getCps() >= 100,
+        }, {
+            id: 'cps_1k',
+            name: '⚡⚡ 1000 🪙/s',
+            desc: 'Osiągnij 1000 monet na sekundę',
+            check: () => getCps() >= 1000,
+        }, {
+            id: 'cps_10k',
+            name: '⚡⚡⚡ 10 000 🪙/s',
+            desc: 'Osiągnij 10 000 monet na sekundę',
+            check: () => getCps() >= 10000,
+        }, {
+            id: 'prestige_1',
+            name: '🌟 Pierwszy prestiż',
+            desc: 'Wykonaj prestiż po raz pierwszy',
+            check: () => state.totalPrestiges >= 1,
+        }, {
+            id: 'prestige_5',
+            name: '🌟🌟🌟🌟🌟 5 prestiży',
+            desc: 'Wykonaj prestiż 5 razy',
+            check: () => state.totalPrestiges >= 5,
+        }, ];
+
+        // ============================================================
+        //  HELPERS
+        // ============================================================
+        function getUpgradeLevel(id) { return state.upgrades[id] || 0; }
+
+        function getGenCount(id) { return state.generators[id] || 0; }
+
+        function getPrestigeBonus() {
+            return state.prestigePoints * CONFIG.PRESTIGE_BONUS_PER_POINT;
+        }
+
+        function getCps() {
+            let total = 0;
+            for (const gen of GENERATORS) {
+                const count = getGenCount(gen.id);
+                total += count * gen.baseProduction * (1 + getPrestigeBonus());
+            }
+            return total;
+        }
+
+        function getClickPower() {
+            let base = 1;
+            for (const upg of UPGRADES) {
+                const lvl = getUpgradeLevel(upg.id);
+                base += upg.effect(lvl);
+            }
+            return Math.floor(base * (1 + getPrestigeBonus()));
+        }
+
+        function getUpgradeCost(upg) {
+            const lvl = getUpgradeLevel(upg.id);
+            return Math.floor(upg.baseCost * Math.pow(upg.costMultiplier, lvl));
+        }
+
+        function getGenCost(gen) {
+            const count = getGenCount(gen.id);
+            return Math.floor(gen.baseCost * Math.pow(gen.costMultiplier, count));
+        }
+
+        function formatNum(n) {
+            if (n < 1000) return Math.floor(n).toString();
+            if (n < 1000000) return (n / 1000).toFixed(1) + 'k';
+            if (n < 1000000000) return (n / 1000000).toFixed(1) + 'M';
+            if (n < 1000000000000) return (n / 1000000000).toFixed(1) + 'B';
+            return (n / 1000000000000).toFixed(1) + 'T';
+        }
+
+        function formatNumFull(n) {
+            return Math.floor(n).toLocaleString();
+        }
+
+        function getPrestigeGain() {
+            if (state.totalCoinsEarned < 1000) return 0;
+            return Math.floor(Math.sqrt(state.totalCoinsEarned / 1000));
+        }
+
+        // ============================================================
+        //  GAME LOGIC
+        // ============================================================
+        function clickCoin() {
+            sound.playClick();
+            const power = getClickPower();
+            state.coins += power;
+            state.totalCoinsEarned += power;
+            state.totalClicks += 1;
+
+            spawnParticles();
+            spawnBurst();
+
+            updateUI();
+            checkAchievements();
+        }
+
+        function buyUpgrade(id) {
+            console.log('buyUpgrade called with id:', id);
+            const upg = UPGRADES.find(u => u.id === id);
+            if (!upg) {
+                console.warn('Upgrade not found:', id);
+                return;
+            }
+            const lvl = getUpgradeLevel(id);
+            if (lvl >= upg.maxLevel) {
+                sound.playError();
+                showToast('❌', 'Osiągnięto maksymalny poziom!');
+                console.log('Max level reached');
+                return;
+            }
+            const cost = getUpgradeCost(upg);
+            if (state.coins < cost) {
+                sound.playError();
+                showToast('❌', `Brak monet! Potrzebujesz ${formatNum(cost)} 🪙`);
+                console.log('Not enough coins, have:', state.coins, 'need:', cost);
+                return;
+            }
+            state.coins -= cost;
+            state.upgrades[id] = (state.upgrades[id] || 0) + 1;
+            sound.playBuy();
+            updateUI();
+            checkAchievements();
+            saveGame();
+            showToast('⬆️', `Kupiono: ${upg.name}`);
+            console.log('Upgrade purchased, new level:', state.upgrades[id]);
+        }
+
+        function buyGenerator(id) {
+            console.log('buyGenerator called with id:', id);
+            const gen = GENERATORS.find(g => g.id === id);
+            if (!gen) {
+                console.warn('Generator not found:', id);
+                return;
+            }
+            const cost = getGenCost(gen);
+            if (state.coins < cost) {
+                sound.playError();
+                showToast('❌', `Brak monet! Potrzebujesz ${formatNum(cost)} 🪙`);
+                console.log('Not enough coins, have:', state.coins, 'need:', cost);
+                return;
+            }
+            state.coins -= cost;
+            state.generators[id] = (state.generators[id] || 0) + 1;
+            sound.playBuy();
+            updateUI();
+            checkAchievements();
+            saveGame();
+            showToast('🏭', `Kupiono: ${gen.name}`);
+            console.log('Generator purchased, new count:', state.generators[id]);
+        }
+
+        function doPrestige() {
+            const gain = getPrestigeGain();
+            if (gain < 1) {
+                sound.playError();
+                showToast('❌', 'Potrzebujesz co najmniej 1000 zarobionych monet!');
+                return;
+            }
+            if (!confirm(`Czy na pewno chcesz wykonać prestiż?\nZdobywasz ${gain} punktów prestiżu.\nCały postęp zostanie zresetowany!`)) return;
+
+            sound.playPrestige();
+
+            state.prestigePoints += gain;
+            state.totalPrestiges += 1;
+            state.coins = 0;
+            state.totalCoinsEarned = 0;
+            state.totalClicks = 0;
+            state.clickPower = 1;
+            state.upgrades = {};
+            state.generators = {};
+            state.startTime = Date.now();
+            state.gameTime = 0;
+
+            updateUI();
+            checkAchievements();
+            showToast('🌟', `Prestiż wykonany! +${gain} punktów prestiżu!`);
+        }
+
+        // ============================================================
+        //  PARTICLES
+        // ============================================================
+        function spawnParticles() {
+            const el = document.getElementById('coinEl');
+            const rect = el.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+
+            const count = 8 + Math.floor(Math.random() * 10);
+            for (let i = 0; i < count; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const angle = Math.random() * 2 * Math.PI;
+                const dist = 60 + Math.random() * 120;
+                const tx = Math.cos(angle) * dist;
+                const ty = Math.sin(angle) * dist - 40;
+                p.style.setProperty('--tx', tx + 'px');
+                p.style.setProperty('--ty', ty + 'px');
+                p.textContent = ['+1', '🪙', '✨', '💫', '⭐'][Math.floor(Math.random() * 5)];
+                p.style.left = (cx + (Math.random() - 0.5) * 20) + 'px';
+                p.style.top = (cy + (Math.random() - 0.5) * 20) + 'px';
+                p.style.fontSize = (18 + Math.random() * 18) + 'px';
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 900);
+            }
+        }
+
+        function spawnBurst() {
+            const el = document.getElementById('coinEl');
+            const rect = el.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+
+            const burst = document.createElement('div');
+            burst.className = 'particle-burst';
+            const size = 60 + Math.random() * 80;
+            burst.style.width = size + 'px';
+            burst.style.height = size + 'px';
+            burst.style.left = (cx - size / 2) + 'px';
+            burst.style.top = (cy - size / 2) + 'px';
+            document.body.appendChild(burst);
+            setTimeout(() => burst.remove(), 700);
+        }
+
+        // ============================================================
+        //  ACHIEVEMENTS
+        // ============================================================
+        function checkAchievements() {
+            let unlocked = 0;
+            for (const ach of ACHIEVEMENTS) {
+                if (state.achievements[ach.id]) {
+                    unlocked++;
+                    continue;
+                }
+                if (ach.check()) {
+                    state.achievements[ach.id] = true;
+                    unlocked++;
+                    sound.playAchievement();
+                    showToast('🏆', `Osiągnięcie: ${ach.name}!`);
+                }
+            }
+            document.getElementById('achBadge').textContent = unlocked;
+        }
+
+        function getUnlockedCount() {
+            return ACHIEVEMENTS.filter(a => state.achievements[a.id]).length;
+        }
+
+        // ============================================================
+        //  UI RENDER
+        // ============================================================
+        function updateUI() {
+            document.getElementById('hdrCoins').textContent = formatNum(state.coins);
+            document.getElementById('hdrCps').textContent = formatNum(getCps()) + '/s';
+            document.getElementById('hdrPp').textContent = state.prestigePoints;
+            document.getElementById('clickPowerDisplay').textContent = getClickPower();
+
+            renderUpgrades();
+            renderGenerators();
+            renderPrestige();
+            renderAchievements();
+            renderStats();
+        }
+
+        function renderUpgrades() {
+            const container = document.getElementById('upgradeList');
+            container.innerHTML = '';
+            for (const upg of UPGRADES) {
+                const lvl = getUpgradeLevel(upg.id);
+                const cost = getUpgradeCost(upg);
+                const maxed = lvl >= upg.maxLevel;
+                const canAfford = state.coins >= cost && !maxed;
+
+                const div = document.createElement('div');
+                div.className = 'upgrade-item' + (maxed ? ' bought' : '');
+
+                const info = document.createElement('div');
+                info.className = 'info';
+                info.innerHTML = `
+              <div class="name">${upg.name}</div>
+              <div class="desc">${upg.desc}</div>
+              <div class="owned">Poziom: ${lvl} / ${upg.maxLevel} ${maxed ? '✅' : ''}</div>
+            `;
+
+                const costEl = document.createElement('div');
+                costEl.className = 'cost' + (canAfford ? '' : ' not-enough');
+                costEl.innerHTML = `
+              <span class="coin-icon">🪙</span>
+              <span class="cost-value">${formatNum(cost)}</span>
+            `;
+
+                const btn = document.createElement('button');
+                btn.className = 'buy-btn';
+                btn.textContent = maxed ? 'MAX' : 'Kup';
+                btn.disabled = !canAfford && !maxed; // disabled gdy nie stać i nie max
+                // Jeśli maxed, przycisk i tak disabled (ale styl inny)
+                if (maxed) btn.disabled = true;
+                btn.dataset.buyUpgrade = upg.id;
+
+                div.appendChild(info);
+                div.appendChild(costEl);
+                div.appendChild(btn);
+                container.appendChild(div);
+            }
+        }
+
+        function renderGenerators() {
+            const container = document.getElementById('generatorList');
+            container.innerHTML = '';
+            for (const gen of GENERATORS) {
+                const count = getGenCount(gen.id);
+                const cost = getGenCost(gen);
+                const canAfford = state.coins >= cost;
+                const prod = count * gen.baseProduction * (1 + getPrestigeBonus());
+
+                const div = document.createElement('div');
+                div.className = 'gen-item';
+
+                const info = document.createElement('div');
+                info.className = 'info';
+                info.innerHTML = `
+              <div class="name">${gen.name}</div>
+              <div class="desc">${gen.desc}</div>
+              <div class="owned">Posiadane: ${count}</div>
+              <div class="production">📈 ${formatNum(prod)}/s</div>
+            `;
+
+                const costEl = document.createElement('div');
+                costEl.className = 'cost' + (canAfford ? '' : ' not-enough');
+                costEl.innerHTML = `
+              <span class="coin-icon">🪙</span>
+              <span class="cost-value">${formatNum(cost)}</span>
+            `;
+
+                const btn = document.createElement('button');
+                btn.className = 'buy-btn';
+                btn.textContent = 'Kup';
+                btn.disabled = !canAfford;
+                btn.dataset.buyGenerator = gen.id;
+
+                div.appendChild(info);
+                div.appendChild(costEl);
+                div.appendChild(btn);
+                container.appendChild(div);
+            }
+        }
+
+        function renderPrestige() {
+            const gain = getPrestigeGain();
+            document.getElementById('ppCount').textContent = state.prestigePoints;
+            const bonus = (getPrestigeBonus() * 100);
+            document.getElementById('ppBonusDisplay').textContent =
+                `+${bonus.toFixed(1)}% do wszystkich przychodów`;
+            const btn = document.getElementById('prestigeBtn');
+            btn.disabled = gain < 1;
+            document.getElementById('prestigeInfo').innerHTML = `
+            Zresetujesz postęp, ale zdobędziesz <strong>${gain}</strong> punktów prestiżu.<br />
+            Każdy punkt daje <strong>+5%</strong> do wszystkich przychodów na zawsze.
+            ${gain > 0 ? `<br/><span style="color:#ffd700;">➜ Zdobędziesz ${gain} PP</span>` : ''}
+          `;
+        }
+
+        function renderAchievements() {
+            const container = document.getElementById('achList');
+            container.innerHTML = '';
+            let unlocked = 0;
+            for (const ach of ACHIEVEMENTS) {
+                const done = !!state.achievements[ach.id];
+                if (done) unlocked++;
+                const div = document.createElement('div');
+                div.className = 'ach-item' + (done ? ' unlocked' : '');
+                div.innerHTML = `
+              <div class="ach-icon">${done ? '🏆' : '⬜'}</div>
+              <div class="ach-info">
+                <div class="ach-name">${ach.name}</div>
+                <div class="ach-desc">${ach.desc}</div>
+              </div>
+              <div class="ach-status">${done ? '✅' : '🔒'}</div>
+            `;
+                container.appendChild(div);
+            }
+            document.getElementById('achBadge').textContent = unlocked;
+        }
+
+        function renderStats() {
+            const container = document.getElementById('statsGrid');
+            const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+            const hours = Math.floor(elapsed / 3600);
+            const minutes = Math.floor((elapsed % 3600) / 60);
+            const seconds = elapsed % 60;
+            const timeStr = `${hours}h ${minutes}m ${seconds}s`;
+
+            const stats = [{
+                label: '💰 Monety',
+                value: formatNumFull(state.coins),
+                cls: 'gold',
+            }, {
+                label: '📈 Łącznie zarobione',
+                value: formatNumFull(state.totalCoinsEarned),
+                cls: 'gold',
+            }, {
+                label: '👆 Kliknięcia',
+                value: formatNumFull(state.totalClicks),
+                cls: '',
+            }, {
+                label: '⚡ Monet/s',
+                value: formatNumFull(getCps()),
+                cls: 'purple',
+            }, {
+                label: '💪 Siła kliknięcia',
+                value: formatNumFull(getClickPower()),
+                cls: '',
+            }, {
+                label: '⭐ Punkty prestiżu',
+                value: state.prestigePoints,
+                cls: 'pink',
+            }, {
+                label: '🌟 Prestiże wykonane',
+                value: state.totalPrestiges,
+                cls: 'pink',
+            }, {
+                label: '🏆 Osiągnięcia',
+                value: `${getUnlockedCount()}/${ACHIEVEMENTS.length}`,
+                cls: 'green',
+            }, {
+                label: '⏱️ Czas gry',
+                value: timeStr,
+                cls: '',
+            }, {
+                label: '📦 Stan gry',
+                value: `${Object.keys(state.upgrades).length} ulepszeń, ${Object.keys(state.generators).length} generatorów`,
+                cls: '',
+            }, ];
+
+            container.innerHTML = '';
+            for (const s of stats) {
+                const div = document.createElement('div');
+                div.className = 'stat-item';
+                div.innerHTML = `
+              <div class="stat-label">${s.label}</div>
+              <div class="stat-value ${s.cls}">${s.value}</div>
+            `;
+                container.appendChild(div);
+            }
+        }
+
+        // ============================================================
+        //  TOAST
+        // ============================================================
+        let toastTimeout = null;
+
+        function showToast(icon, msg) {
+            const el = document.getElementById('toast');
+            el.innerHTML = `<span class="toast-icon">${icon}</span> ${msg}`;
+            el.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                el.classList.remove('show');
+            }, 2500);
+        }
+
+        // ============================================================
+        //  SAVE / LOAD
+        // ============================================================
+        function saveGame() {
+            const data = {
+                coins: state.coins,
+                totalCoinsEarned: state.totalCoinsEarned,
+                totalClicks: state.totalClicks,
+                clickPower: state.clickPower,
+                prestigePoints: state.prestigePoints,
+                totalPrestiges: state.totalPrestiges,
+                generators: state.generators,
+                upgrades: state.upgrades,
+                achievements: state.achievements,
+                startTime: state.startTime,
+                gameTime: state.gameTime,
+                lastSave: Date.now(),
+            };
+            try {
+                localStorage.setItem('clickerGameSave', JSON.stringify(data));
+                document.getElementById('saveInfo').textContent = 'Zapisano! ' + new Date().toLocaleTimeString();
+                setTimeout(() => {
+                    document.getElementById('saveInfo').textContent = 'Autozapis co 15s';
+                }, 2000);
+            } catch (e) {
+                console.warn('Save failed', e);
+            }
+        }
+
+        function loadGame() {
+            try {
+                const raw = localStorage.getItem('clickerGameSave');
+                if (!raw) {
+                    showToast('ℹ️', 'Brak zapisanego stanu.');
+                    return;
+                }
+                const data = JSON.parse(raw);
+
+                // Only accept the fields that belong to the game state.
+                if (Number.isFinite(Number(data.coins))) state.coins = Number(data.coins);
+                if (Number.isFinite(Number(data.totalCoinsEarned))) state.totalCoinsEarned = Number(data.totalCoinsEarned);
+                if (Number.isFinite(Number(data.totalClicks))) state.totalClicks = Number(data.totalClicks);
+                if (Number.isFinite(Number(data.prestigePoints))) state.prestigePoints = Number(data.prestigePoints);
+                if (Number.isFinite(Number(data.totalPrestiges))) state.totalPrestiges = Number(data.totalPrestiges);
+                if (Number.isFinite(Number(data.startTime))) state.startTime = Number(data.startTime);
+                if (Number.isFinite(Number(data.gameTime))) state.gameTime = Number(data.gameTime);
+
+                state.generators = (data.generators && typeof data.generators === 'object') ? data.generators : {};
+                state.upgrades = (data.upgrades && typeof data.upgrades === 'object') ? data.upgrades : {};
+                state.achievements = (data.achievements && typeof data.achievements === 'object') ? data.achievements : {};
+                state.totalPrestiges = state.totalPrestiges || 0;
+                state.prestigePoints = state.prestigePoints || 0;
+                state.totalCoinsEarned = state.totalCoinsEarned || 0;
+                state.totalClicks = state.totalClicks || 0;
+                state.gameTime = state.gameTime || 0;
+                updateUI();
+                checkAchievements();
+                showToast('✅', 'Stan gry wczytany!');
+            } catch (e) {
+                console.warn('Load failed', e);
+                showToast('❌', 'Błąd wczytywania zapisu.');
+            }
+        }
+
+        function resetGame() {
+            if (!confirm('Czy na pewno chcesz zresetować cały postęp?\nTa operacja jest nieodwracalna!')) return;
+            if (!confirm('NAPRAWDĘ? Wszystkie dane zostaną usunięte!')) return;
+            localStorage.removeItem('clickerGameSave');
+            location.reload();
+        }
+
+        // ============================================================
+        //  THEME TOGGLE
+        // ============================================================
+        let darkTheme = true;
+
+        function toggleTheme() {
+            darkTheme = !darkTheme;
+            const app = document.getElementById('app');
+            if (darkTheme) {
+                app.style.background = 'linear-gradient(145deg, #12122a, #0d0d1f)';
+                document.body.style.background = '#0a0a1a';
+                document.getElementById('themeToggle').textContent = '🌙';
+            } else {
+                app.style.background = 'linear-gradient(145deg, #f0edff, #e8e4ff)';
+                document.body.style.background = '#f5f3ff';
+                document.getElementById('themeToggle').textContent = '☀️';
+            }
+            document.body.classList.toggle('light-theme', !darkTheme);
+        }
+
+        // Light theme styles
+        const styleLight = document.createElement('style');
+        styleLight.textContent = `
+          body.light-theme #app {
+            background: linear-gradient(145deg, #f0edff, #e8e4ff) !important;
+            border-color: rgba(108,99,255,0.2) !important;
+          }
+          body.light-theme .header .title {
+            background: linear-gradient(135deg, #b8860b, #8b6914);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+          }
+          body.light-theme .panel {
+            background: rgba(255,255,255,0.5) !important;
+            border-color: rgba(108,99,255,0.1) !important;
+          }
+          body.light-theme .tab {
+            color: rgba(0,0,0,0.4) !important;
+          }
+          body.light-theme .tab.active {
+            color: #000 !important;
+            background: rgba(108,99,255,0.1) !important;
+            border-color: rgba(108,99,255,0.2) !important;
+          }
+          body.light-theme .upgrade-item, body.light-theme .gen-item, body.light-theme .ach-item, body.light-theme .stat-item {
+            background: rgba(255,255,255,0.6) !important;
+            border-color: rgba(0,0,0,0.05) !important;
+          }
+          body.light-theme .upgrade-item .info .name, body.light-theme .gen-item .info .name {
+            color: #1a1a2e !important;
+          }
+          body.light-theme .upgrade-item .info .desc, body.light-theme .gen-item .info .desc {
+            color: rgba(0,0,0,0.4) !important;
+          }
+          body.light-theme .upgrade-item .info .owned, body.light-theme .gen-item .info .owned {
+            color: rgba(0,0,0,0.3) !important;
+          }
+          body.light-theme .header-stats .stat {
+            background: rgba(255,255,255,0.5) !important;
+            border-color: rgba(0,0,0,0.05) !important;
+          }
+          body.light-theme .header-stats .stat .value {
+            color: #1a1a2e !important;
+          }
+          body.light-theme .header-stats .stat .value.coin {
+            color: #b8860b !important;
+          }
+          body.light-theme .header-stats .stat .value.cps {
+            color: #5a52e0 !important;
+          }
+          body.light-theme .stat-item .stat-value {
+            color: #1a1a2e !important;
+          }
+          body.light-theme .stat-item .stat-label {
+            color: rgba(0,0,0,0.4) !important;
+          }
+          body.light-theme .footer {
+            border-color: rgba(0,0,0,0.05) !important;
+          }
+          body.light-theme .footer .actions button {
+            color: rgba(0,0,0,0.4) !important;
+            border-color: rgba(0,0,0,0.05) !important;
+          }
+          body.light-theme .footer .actions button:hover {
+            color: #000 !important;
+            background: rgba(0,0,0,0.05) !important;
+          }
+          body.light-theme .footer .actions button.primary {
+            color: #5a52e0 !important;
+            border-color: rgba(108,99,255,0.2) !important;
+            background: rgba(108,99,255,0.08) !important;
+          }
+          body.light-theme .footer .theme-toggle {
+            color: rgba(0,0,0,0.3) !important;
+          }
+          body.light-theme .footer .theme-toggle:hover {
+            color: #000 !important;
+          }
+          body.light-theme .footer .sound-toggle {
+            color: rgba(0,0,0,0.3) !important;
+          }
+          body.light-theme .footer .sound-toggle:hover {
+            color: #000 !important;
+          }
+          body.light-theme .cost {
+            background: rgba(184,134,11,0.08) !important;
+            border-color: rgba(184,134,11,0.15) !important;
+          }
+          body.light-theme .prestige-area .pp-desc {
+            color: rgba(0,0,0,0.4) !important;
+          }
+          body.light-theme .prestige-info {
+            color: rgba(0,0,0,0.3) !important;
+          }
+          body.light-theme .ach-item.unlocked {
+            background: rgba(255,215,0,0.1) !important;
+          }
+          body.light-theme .ach-item .ach-info .ach-name {
+            color: rgba(0,0,0,0.5) !important;
+          }
+          body.light-theme .ach-item.unlocked .ach-info .ach-name {
+            color: #1a1a2e !important;
+          }
+          body.light-theme .ach-item .ach-info .ach-desc {
+            color: rgba(0,0,0,0.25) !important;
+          }
+          body.light-theme .gen-item .info .production {
+            color: #5a52e0 !important;
+          }
+          body.light-theme .pp-bonus {
+            background: rgba(108,99,255,0.08) !important;
+            border-color: rgba(108,99,255,0.1) !important;
+            color: #5a52e0 !important;
+          }
+          body.light-theme .save-info {
+            color: rgba(0,0,0,0.15) !important;
+          }
+          body.light-theme .coin {
+            box-shadow: 0 0 60px rgba(184,134,11,0.2), 0 8px 32px rgba(0,0,0,0.1), inset 0 -8px 24px rgba(0,0,0,0.15), inset 0 8px 24px rgba(255,255,200,0.4) !important;
+          }
+          body.light-theme .coin:hover {
+            box-shadow: 0 0 80px rgba(184,134,11,0.25), 0 8px 32px rgba(0,0,0,0.1), inset 0 -8px 24px rgba(0,0,0,0.15), inset 0 8px 24px rgba(255,255,200,0.4) !important;
+          }
+          body.light-theme .stat-item .stat-value.gold { color: #b8860b !important; }
+          body.light-theme .stat-item .stat-value.purple { color: #5a52e0 !important; }
+          body.light-theme .stat-item .stat-value.pink { color: #d94fd9 !important; }
+          body.light-theme .stat-item .stat-value.green { color: #2d7a3a !important; }
+          body.light-theme .header .title span {
+            -webkit-text-fill-color: rgba(0,0,0,0.15) !important;
+          }
+          body.light-theme .tabs .tab .badge {
+            color: rgba(0,0,0,0.3) !important;
+            background: rgba(0,0,0,0.05) !important;
+          }
+          body.light-theme .tabs .tab.active .badge {
+            color: #000 !important;
+            background: rgba(108,99,255,0.1) !important;
+          }
+          body.light-theme #app::before {
+            display: none;
+          }
+        `;
+        document.head.appendChild(styleLight);
+
+        // ============================================================
+        //  GAME LOOP
+        // ============================================================
+        let lastTick = Date.now();
+
+        function gameLoop() {
+            const now = Date.now();
+            const delta = Math.min((now - lastTick) / 1000, 1);
+            lastTick = now;
+
+            const cps = getCps();
+            if (cps > 0 && delta > 0) {
+                const gain = cps * delta;
+                state.coins += gain;
+                state.totalCoinsEarned += gain;
+            }
+
+            state.gameTime += delta;
+            updateUI();
+            checkAchievements();
+        }
+
+        // ============================================================
+        //  SHOP CLICK HANDLER
+        //  Buttons are recreated by updateUI(), so event delegation makes
+        //  buying reliable even while the game is updating.
+        // ============================================================
+        document.addEventListener('click', (e) => {
+            const upgradeBtn = e.target.closest('[data-buy-upgrade]');
+            if (upgradeBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                buyUpgrade(upgradeBtn.dataset.buyUpgrade);
+                return;
+            }
+
+            const generatorBtn = e.target.closest('[data-buy-generator]');
+            if (generatorBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                buyGenerator(generatorBtn.dataset.buyGenerator);
+            }
+        });
+
+        // ============================================================
+        //  INIT
+        // ============================================================
+        function init() {
+            loadGame();
+
+            document.getElementById('coinContainer').addEventListener('click', clickCoin);
+
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    const paneId = 'pane-' + tab.dataset.tab;
+                    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                    document.getElementById(paneId).classList.add('active');
+                });
+            });
+
+            document.getElementById('prestigeBtn').addEventListener('click', doPrestige);
+            document.getElementById('saveBtn').addEventListener('click', () => { saveGame();
+                showToast('💾', 'Stan gry zapisany!'); });
+            document.getElementById('loadBtn').addEventListener('click', loadGame);
+            document.getElementById('resetBtn').addEventListener('click', resetGame);
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+            document.getElementById('soundToggle').addEventListener('click', () => {
+                const enabled = sound.toggle();
+                document.getElementById('soundToggle').textContent = enabled ? '🔊' : '🔇';
+                showToast(enabled ? '🔊' : '🔇', enabled ? 'Dźwięki włączone' : 'Dźwięki wyłączone');
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    clickCoin();
+                }
+            });
+
+            setInterval(saveGame, CONFIG.SAVE_INTERVAL);
+            setInterval(gameLoop, 100);
+
+            updateUI();
+            checkAchievements();
+            showToast('🪙', 'Klikaj monetę, aby zdobywać monety!');
+            console.log('Game initialized, state:', state);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+
 </body>
 </html>
