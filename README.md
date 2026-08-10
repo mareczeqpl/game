@@ -1,2 +1,2 @@
 # game
-darmowa gra kółko i krzyżyk
+darmowa gra clicker
